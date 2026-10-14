@@ -7,10 +7,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 
 Requires libvips 8.13+.
 
-### Added
-- `&kernel=` parameter to select the resize kernel (`nearest`, `linear`, `cubic`, `mitchell`, `lanczos2`, `lanczos3`, `mks2013`, `mks2021` or `auto`), defaults to `lanczos3`. Use `&kernel=nearest&ll` to preserve the exact colors of pixel art and palette-based images.
-- `&kernel=auto` and `&ll=auto` to use nearest-neighbour resizing and lossless compression for palette-based images with at most 64 colors (e.g. pixel art GIFs or indexed PNGs), and `lanczos3` with lossy compression for everything else. `&ll=auto` also uses lossless compression for other palette-based images when they aren't resampled (or are resized with `&kernel=nearest`), since their exact colors are preserved. Requires libvips 8.16+, falls back to `lanczos3` and lossy compression on older versions.
-
 ### Fixed
 - `&fit=cover` and `&fit=contain` sizing issues with explicit rotation (`&ro=90` / `&ro=270`) and EXIF-based auto-orientation ([#486](https://github.com/weserv/images/issues/486) and [#488](https://github.com/weserv/images/issues/488)).
 - Incorrect focal point positioning (`&a=focal`) on images with EXIF orientations 5-8 ([#486](https://github.com/weserv/images/issues/486)).

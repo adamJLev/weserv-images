@@ -19,25 +19,15 @@ upstream documentation.
 Upstream's active development branch is also `5.x`, so our `5.x` tracks it
 directly.
 
-## Custom changes
+## Changelog
 
-Keep this list up to date whenever a fork-specific change lands, so it's clear
-what differs from upstream and what to watch for during merges.
+Fork-specific user-facing changes go here instead of in
+[CHANGELOG.md](CHANGELOG.md), which we leave identical to upstream so merges
+stay conflict-free. Same format as upstream's changelog.
 
-- **`&kernel=` / `&ll=auto` parameters** (`src/api/...`): selectable resize
-  kernel, plus `auto` mode that keeps palette-based images (pixel art GIFs,
-  indexed PNGs) crisp and lossless. See [CHANGELOG.md](CHANGELOG.md).
-- **`tl/` overlay**: our nginx config (`tl/nginx/imagesweserv.conf`,
-  `tl/nginx/url-allowlist.conf`), static pages (`tl/public/`) and allowlist
-  tests (`tl/tests/`). See [tl/README.md](tl/README.md). Upstream
-  `ngx_conf/imagesweserv.conf` is left untouched; when upstream changes it,
-  port anything relevant into `tl/nginx/imagesweserv.conf` by hand.
-- **`docker/Dockerfile`**: a short "Transient Labs overrides" block before
-  `EXPOSE 80` that installs `procps-ng`/`ripgrep` and copies the `tl/`
-  overlay over the upstream config. This is the main upstream file we touch,
-  so watch it during merges. `.dockerignore` also allows `tl/nginx` and `tl/public`.
-- **`.github/workflows/ci.yml`**: docker publish job tweaked for our fork.
-- **`.github/workflows/tl-tests.yml`**: runs the `tl/` allowlist tests.
+### Added
+- `&kernel=` parameter to select the resize kernel (`nearest`, `linear`, `cubic`, `mitchell`, `lanczos2`, `lanczos3`, `mks2013`, `mks2021` or `auto`), defaults to `lanczos3`. Use `&kernel=nearest&ll` to preserve the exact colors of pixel art and palette-based images.
+- `&kernel=auto` and `&ll=auto` to use nearest-neighbour resizing and lossless compression for palette-based images with at most 64 colors (e.g. pixel art GIFs or indexed PNGs), and `lanczos3` with lossy compression for everything else. `&ll=auto` also uses lossless compression for other palette-based images when they aren't resampled (or are resized with `&kernel=nearest`), since their exact colors are preserved. Requires libvips 8.16+, falls back to `lanczos3` and lossy compression on older versions.
 
 ## Remotes setup
 
