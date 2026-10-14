@@ -7,6 +7,8 @@
 !ngx_conf/**
 !public/**
 !src/**
+!tl/nginx/**
+!tl/public/**
 
 # Allow build files in top-level directory
 !meson.build

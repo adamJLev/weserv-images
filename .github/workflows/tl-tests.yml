@@ -1,0 +1,16 @@
+name: TL URL allowlist tests
+
+on:
+  pull_request:
+  push:
+
+permissions: {}
+
+jobs:
+  url-tests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - run: make -C tl test

@@ -1,0 +1,118 @@
+# Test cases for url-allowlist.conf (SSRF protection). See tests/run.sh to run.
+#
+# Format: <ALLOW|DENY> <raw query string>
+# The query is sent byte-for-byte, so write percent-encoding exactly as an attacker would.
+
+# --- no url param (homepage / static) ---
+ALLOW
+ALLOW w=100
+
+# --- allowlisted hosts ---
+ALLOW url=https://ipfs.io/ipfs/QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG/1.png
+ALLOW url=http://ipfs.io/ipfs/x
+ALLOW url=https://ipfs.io
+ALLOW url=https://arweave.net/abc
+ALLOW url=https://abc123.arweave.net/abc
+ALLOW url=https://bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi.ipfs.w3s.link/1.png
+ALLOW url=https://cdn.transient.xyz/a.png
+ALLOW url=https://nft2-cdn.alchemy.com/a.png
+ALLOW url=https://i.seadn.io/a.png
+ALLOW url=HTTPS://IPFS.IO/ipfs/x
+ALLOW url=https://ipfs.io/ipfs/x&w=300&output=webp
+ALLOW url=https%3A%2F%2Fipfs.io%2Fipfs%2Fx
+ALLOW url=https%3a%2f%2fipfs.io%2fipfs%2fx
+ALLOW url=https://ipfs.io%2Fipfs%2Fx
+# '@' lands in the path once decoded (https://ipfs.io/@evil.com/), so host is still ipfs.io
+ALLOW url=https://ipfs.io%2f@evil.com/
+
+# --- not on the allowlist ---
+DENY url=https://evil.com/a.png
+DENY url=https%3A%2F%2Fevil.com%2Fa.png
+DENY url=https://ipfs.io.evil.com/a.png
+DENY url=https://evilipfs.io/a.png
+DENY url=https://evilarweave.net/a.png
+DENY url=https://transient.xyz.evil.com/a.png
+
+# --- internal / metadata targets ---
+DENY url=http://169.254.169.254/latest/meta-data/
+DENY url=http://127.0.0.1/
+DENY url=http://localhost/
+DENY url=http://images.weserv.local/
+DENY url=http://[::1]/
+DENY url=http://0x7f000001/
+DENY url=http://2130706433/
+
+# --- userinfo tricks ---
+DENY url=https://ipfs.io@evil.com/
+DENY url=https://evil.com@ipfs.io/
+DENY url=https://ipfs.io%40evil.com/
+DENY url=https%3A%2F%2Fipfs.io%40evil.com%2F
+DENY url=https://user:pass@ipfs.io/
+
+# --- ports ---
+DENY url=https://ipfs.io:8080/x
+DENY url=https://ipfs.io%3A8080/x
+DENY url=https%3A%2F%2Fipfs.io%3A8080%2Fx
+
+# --- scheme / authority confusion ---
+DENY url=//evil.com/a.png
+DENY url=//ipfs.io/a.png
+DENY url=ipfs.io/a.png
+DENY url=ftp://ipfs.io/x
+DENY url=file:///etc/passwd
+DENY url=https:/ipfs.io/x
+DENY url=https:///ipfs.io/x
+DENY url=https%3A//evil.com/
+DENY url=https:%2F%2Fevil.com/
+DENY url=%20https://ipfs.io/x
+DENY url=%2F%2Fevil.com/
+DENY url=%2F%2Fipfs.io/x
+DENY url=%2f%2fipfs.io%2fx
+DENY url=/%2Fipfs.io/x
+DENY url=///evil.com/
+DENY url=///ipfs.io/x
+DENY url=////ipfs.io/x
+DENY url=ssl://ipfs.io/x
+DENY url=ssl:ipfs.io/x
+DENY url=ssl%3A%2F%2Fipfs.io%2Fx
+DENY url=httpss://ipfs.io/x
+DENY url=%68ttps://ipfs.io/x
+DENY url=%68ttps%3A%2F%2Fipfs.io%2Fx
+DENY url=ht%74ps://ipfs.io/x
+DENY url=%68%74%74%70%73%3A%2F%2Fipfs.io%2Fx
+DENY url=%68ttps://evil.com/
+
+# --- special-char smuggling ---
+DENY url=https://ipfs.io\@evil.com/
+DENY url=https://ipfs.io%5c@evil.com/
+DENY url=https:\\evil.com/
+DENY url=https://ipfs.io%23@evil.com/
+DENY url=https://ipfs.io?@evil.com/
+DENY url=https://ipfs.io%3F@evil.com/
+DENY url=https://ipfs.io%00.evil.com/
+DENY url=https://ipfs.io%0d%0aHost:evil.com/
+DENY url=https://ipfs.io%09/x
+
+# --- double encoding ---
+DENY url=https%253A%252F%252Fevil.com%252F
+DENY url=https%253A%252F%252Fipfs.io%252F
+
+# --- present but garbage ---
+DENY url=x
+DENY url=https://
+
+# --- ?default= fallback (open redirect) is not supported ---
+DENY url=https://ipfs.io/ipfs/x&default=https://evil.com/
+DENY default=https://evil.com/
+DENY url=https://ipfs.io/ipfs/x&default=
+DENY url=https://ipfs.io/ipfs/x&default
+DENY url=https://ipfs.io/ipfs/x&default=&default=https://evil.com/
+DENY url=https://ipfs.io/ipfs/x&DEFAULT=https://evil.com/
+DENY url=https://ipfs.io/ipfs/x&errorredirect=https://evil.com/
+DENY url=https://ipfs.io/ipfs/x&d%65fault=https://evil.com/
+DENY url=https://ipfs.io/ipfs/x&%64efault=https://evil.com/
+
+# other params that merely contain the word are fine
+ALLOW url=https://ipfs.io/ipfs/default&w=100
+ALLOW url=https://ipfs.io/ipfs/x?default=1
+ALLOW url=https%3A%2F%2Fipfs.io%2Fipfs%2Fx%3Fdefault%3D1

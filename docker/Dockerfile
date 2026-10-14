@@ -105,6 +105,11 @@ ENV TZ=Europe/Amsterdam \
     # Use jemalloc on glibc-based Linux systems to reduce the effects of memory fragmentation
     LD_PRELOAD=/usr/lib64/libjemalloc.so
 
+# Transient Labs overrides (see FORK.md)
+RUN dnf install -y procps-ng ripgrep && dnf clean all
+COPY tl/nginx/*.conf /etc/nginx/
+COPY tl/public/ /var/www/imagesweserv/public/
+
 EXPOSE 80
 
 STOPSIGNAL SIGQUIT

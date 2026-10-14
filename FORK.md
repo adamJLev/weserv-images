@@ -24,7 +24,20 @@ directly.
 Keep this list up to date whenever a fork-specific change lands, so it's clear
 what differs from upstream and what to watch for during merges.
 
-- _None yet. The fork currently matches upstream `5.x`._
+- **`&kernel=` / `&ll=auto` parameters** (`src/api/...`): selectable resize
+  kernel, plus `auto` mode that keeps palette-based images (pixel art GIFs,
+  indexed PNGs) crisp and lossless. See [CHANGELOG.md](CHANGELOG.md).
+- **`tl/` overlay**: our nginx config (`tl/nginx/imagesweserv.conf`,
+  `tl/nginx/url-allowlist.conf`), static pages (`tl/public/`) and allowlist
+  tests (`tl/tests/`). See [tl/README.md](tl/README.md). Upstream
+  `ngx_conf/imagesweserv.conf` is left untouched; when upstream changes it,
+  port anything relevant into `tl/nginx/imagesweserv.conf` by hand.
+- **`docker/Dockerfile`**: a short "Transient Labs overrides" block before
+  `EXPOSE 80` that installs `procps-ng`/`ripgrep` and copies the `tl/`
+  overlay over the upstream config. This is the main upstream file we touch,
+  so watch it during merges. `.dockerignore` also allows `tl/nginx` and `tl/public`.
+- **`.github/workflows/ci.yml`**: docker publish job tweaked for our fork.
+- **`.github/workflows/tl-tests.yml`**: runs the `tl/` allowlist tests.
 
 ## Remotes setup
 
