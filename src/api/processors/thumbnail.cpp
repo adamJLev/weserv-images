@@ -353,6 +353,16 @@ VImage Thumbnail::process(const VImage &image) const {
 
     auto kernel = query_->get<Kernel>("kernel", Kernel::Lanczos3);
 
+#if VIPS_VERSION_AT_LEAST(8, 16, 0)
+    // Palette-based images keep their exact colours when they aren't
+    // resampled (or with nearest-neighbour), where lossless output is usually
+    // smaller than lossy, even for full 8-bit palettes with dithering.
+    if (query_->get<bool>("ll_auto", false) && utils::is_palette(image) &&
+        ((hshrink == 1.0 && vshrink == 1.0) || kernel == Kernel::Nearest)) {
+        query_->update("ll", true);
+    }
+#endif
+
     // Both .premultiply() and .unpremultiply() produces a float image, so we
     // must cast back to the original format. Use NOTSET to mean no
     // pre/unmultiply.

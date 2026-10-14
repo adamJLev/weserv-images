@@ -153,7 +153,8 @@ void Stream::resolve_query(const VImage &image) const {
     // limited set of exact colours, so prefer nearest-neighbour resizing and
     // lossless output to preserve them. Full 8-bit palettes are usually
     // dithered photographic content, which compresses better with lossy
-    // output.
+    // output once resampled (see Thumbnail::process for the case where it
+    // isn't).
     auto few_colors = utils::is_palette(image) &&
                       image.get_typeof(VIPS_META_BITS_PER_SAMPLE) != 0 &&
                       image.get_int(VIPS_META_BITS_PER_SAMPLE) <= 6;

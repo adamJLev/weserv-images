@@ -141,7 +141,7 @@ TEST_CASE("output", "[stream]") {
             return;
         }
 
-        auto params = "w=32&output=webp&ll=auto";
+        auto params = "w=16&output=webp&ll=auto";
 
         // Lossless WebP is stored in a VP8L chunk, lossy WebP in a VP8 chunk
         std::string jpg_buffer =
@@ -152,12 +152,27 @@ TEST_CASE("output", "[stream]") {
 
 #if VIPS_MAJOR_VERSION > 8 ||                                                  \
     (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 16)
-        // A full 8-bit palette is treated as photographic content
+        // A full 8-bit palette (32x32) is treated as photographic content once
+        // resampled
         std::string palette_8bit_buffer =
             process_file<std::string>(fixtures->input_png_8bit_palette, params);
 
         CHECK_THAT(palette_8bit_buffer, StartsWith("RIFF"));
         CHECK_THAT(palette_8bit_buffer, !ContainsSubstring("VP8L"));
+
+        // ... unless it isn't resampled, so its exact colours are preserved
+        std::string palette_8bit_unscaled_buffer = process_file<std::string>(
+            fixtures->input_png_8bit_palette, "output=webp&ll=auto");
+
+        CHECK_THAT(palette_8bit_unscaled_buffer, StartsWith("RIFF"));
+        CHECK_THAT(palette_8bit_unscaled_buffer, ContainsSubstring("VP8L"));
+
+        std::string palette_8bit_nearest_buffer = process_file<std::string>(
+            fixtures->input_png_8bit_palette,
+            "w=16&kernel=nearest&output=webp&ll=auto");
+
+        CHECK_THAT(palette_8bit_nearest_buffer, StartsWith("RIFF"));
+        CHECK_THAT(palette_8bit_nearest_buffer, ContainsSubstring("VP8L"));
 
         // A small palette is preserved losslessly
         auto two_colors =
