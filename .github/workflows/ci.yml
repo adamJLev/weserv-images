@@ -113,6 +113,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
 
   docker-publish:
+    if: github.repository == 'weserv/images' # TL: dont run publish for our fork
     needs: CI
     runs-on: ubuntu-24.04
     permissions:
